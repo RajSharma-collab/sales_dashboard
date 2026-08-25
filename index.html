@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VOYX - Admin Dashboard</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-[#f4f6f8] text-[#1e293b] font-sans antialiased min-h-screen p-4 md:p-8">
+
+  <div class="max-w-[1440px] mx-auto space-y-6">
+
+    <!-- Top Navigation Bar -->
+    <header class="flex flex-wrap items-center justify-between gap-4">
+      <!-- Logo -->
+      <div class="flex items-center gap-2">
+        <span class="text-3xl font-black tracking-wider text-[#ff5722] flex items-center">
+          V<span class="text-2xl text-slate-800">OYX</span>
+        </span>
+      </div>
+
+      <!-- Center & Right Controls -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Date Selector -->
+        <div class="bg-white border border-slate-200 shadow-sm rounded-xl px-3 py-1.5 flex items-center gap-2 text-xs font-semibold text-slate-600">
+          <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i>
+          <input type="date" id="reportDateInput" value="2026-05-20" class="outline-none bg-transparent cursor-pointer" />
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-sm text-xs font-semibold">
+          <button class="bg-[#ff5722] text-white px-4 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> Dashboard
+          </button>
+          <button class="text-slate-500 hover:text-slate-800 px-4 py-1.5 flex items-center gap-1.5 transition">
+            <i data-lucide="wallet" class="w-3.5 h-3.5"></i> Wallet Summary
+          </button>
+        </div>
+
+        <!-- Download CSV Button -->
+        <button id="downloadCsvBtn" class="bg-[#1e293b] text-white hover:bg-slate-800 text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Download CSV
+        </button>
+
+        <!-- User Profile -->
+        <div class="text-right pl-2 border-l border-slate-300">
+          <p class="text-xs font-bold text-slate-800 leading-none">Voyx Admin</p>
+          <a href="#" class="text-[11px] text-blue-500 hover:underline flex items-center justify-end gap-1 mt-0.5">
+            Logout <i data-lucide="log-out" class="w-3 h-3"></i>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Top KPI Performance Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Card 1: Today Performance (Dark Gradient Accent) -->
+      <div class="bg-[#111827] text-white rounded-2xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-between">
+        <span class="text-[10px] font-bold tracking-wider uppercase text-slate-400">TODAY PERFORMANCE</span>
+        <div class="my-2">
+          <div class="flex items-baseline gap-2">
+            <h2 id="kpiTodaySales" class="text-4xl font-extrabold text-[#ff5722]">0</h2>
+            <span class="text-lg font-semibold text-slate-200">Orders</span>
+          </div>
+          <p id="kpiTodayRevenue" class="text-sm font-semibold text-slate-300 mt-1">₹0.00 <span class="text-xs text-slate-400 font-normal">Revenue</span></p>
+        </div>
+        <div class="h-1 w-full bg-slate-800 rounded-full mt-2 overflow-hidden">
+          <div class="h-full bg-[#ff5722] w-2/3"></div>
+        </div>
+      </div>
+
+      <!-- Card 2: Current MTD -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <span id="kpiMtdLabel" class="text-[11px] font-bold tracking-wider uppercase text-slate-400">MONTH MTD</span>
+          <div class="w-7 h-7 bg-orange-50 text-[#ff5722] rounded-lg flex items-center justify-center">
+            <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div>
+          <h2 id="kpiMtdSales" class="text-3xl font-extrabold text-slate-800">0</h2>
+          <p id="kpiMtdRevenue" class="text-xs font-semibold text-slate-500 mt-1">₹0.00 <span class="text-[10px] font-normal">Revenue</span></p>
+        </div>
+      </div>
+
+      <!-- Card 3: Previous Month Same Day -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400">PREV MONTH (SAME DAY)</span>
+          <div class="w-7 h-7 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div>
+          <h2 id="kpiPrevDaySales" class="text-3xl font-extrabold text-slate-800">0</h2>
+          <p id="kpiPrevDayRevenue" class="text-xs font-semibold text-slate-500 mt-1">₹0.00 <span class="text-[10px] font-normal">Revenue</span></p>
+        </div>
+      </div>
+
+      <!-- Card 4: Previous Month Full MTD -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400">PREV MONTH</span>
+          <div class="w-7 h-7 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div>
+          <h2 id="kpiPrevMonthSales" class="text-3xl font-extrabold text-slate-800">0</h2>
+          <p id="kpiPrevMonthRevenue" class="text-xs font-semibold text-slate-500 mt-1">₹0.00 <span class="text-[10px] font-normal">Revenue</span></p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Middle Section: Leaderboard + Top Destinations -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      
+      <!-- Daily Leaderboard (8 cols) -->
+      <div class="lg:col-span-8 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+        <div class="flex items-center gap-2 mb-4">
+          <i data-lucide="award" class="w-4 h-4 text-slate-400"></i>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">DAILY LEADERBOARD</h3>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="text-slate-400 border-b border-slate-100 font-semibold">
+                <th class="pb-3 text-center w-8">#</th>
+                <th class="pb-3">SALES_R</th>
+                <th class="pb-3 text-center">#DAY</th>
+                <th class="pb-3 text-center">#MTD</th>
+                <th class="pb-3 text-right">MTD REV</th>
+                <th class="pb-3 text-right">ARPU</th>
+                <th class="pb-3 text-center w-36">TARGET</th>
+                <th class="pb-3 text-center">#PV_MONTH</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody" class="divide-y divide-slate-50">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top Destinations (4 cols - Dark Card) -->
+      <div class="lg:col-span-4 bg-[#111827] text-white rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center gap-2 mb-4">
+          <i data-lucide="globe" class="w-4 h-4 text-slate-400"></i>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">TOP DESTINATIONS</h3>
+        </div>
+
+        <div id="destinationsList" class="space-y-3 flex-1 overflow-y-auto">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Bottom Charts Section -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      
+      <!-- Daily Summary Line Chart -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="activity" class="w-4 h-4 text-slate-400"></i>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">DAILY SUMMARY</h3>
+        </div>
+        <div class="h-64 w-full">
+          <canvas id="dailySummaryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Monthly Summary Line Chart -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="trending-up" class="w-4 h-4 text-slate-400"></i>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">MONTHLY SUMMARY</h3>
+        </div>
+        <div class="h-64 w-full">
+          <canvas id="monthlySummaryChart"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
